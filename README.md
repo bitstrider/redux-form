@@ -2,7 +2,7 @@
 ---
 [<img src="http://npm.packagequality.com/badge/redux-form.png" align="right"/>](http://packagequality.com/#?package=redux-form)
 
-[![NPM Version](https://img.shields.io/npm/v/redux-form.svg?style=flat)](https://www.npmjs.com/package/redux-form) 
+[![NPM Version](https://img.shields.io/npm/v/redux-form.svg?style=flat)](https://www.npmjs.com/package/redux-form)
 [![NPM Downloads](https://img.shields.io/npm/dm/redux-form.svg?style=flat)](https://www.npmjs.com/package/redux-form)
 [![Build Status](https://img.shields.io/travis/erikras/redux-form/v6.svg?style=flat)](https://travis-ci.org/erikras/redux-form)
 [![codecov.io](https://codecov.io/gh/erikras/redux-form/branch/master/graph/badge.svg)](https://codecov.io/gh/erikras/redux-form)
@@ -51,3 +51,40 @@ You can play around with `redux-form` in these sandbox versions of the Examples.
 
 - [Abstracting Form State with Redux Form at JS Channel - Bengaluru 2016](https://youtu.be/eDTi7lYR1VU)
 [![Abstracting Form State with Redux Form at JS Channel - Bengaluru 2016](docs/video-thumb.jpg)](https://youtu.be/eDTi7lYR1VU)
+
+## AsyncValidation for Multiple Fields
+Here the working example of how to write your `asyncValidate` function using `composeAsyncValidators` to define validators for multiple fields
+
+```javascript
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function composeAsyncValidators(validatorFns) {
+  return async (values, dispatch, props, field) => {
+    const validatorFn = validatorFns[field]
+    await validatorFn(values, dispatch, props, field);
+  };
+}
+
+const usernameValidate = (values /*, dispatch */) => {
+  return sleep(1000).then(() => { // simulate server latency
+    if (['john', 'paul', 'george', 'ringo'].includes(values.username)) {
+      throw { username: 'That username is taken' };
+    }
+  });
+};
+
+const companynameValidate = (values /*, dispatch */) => {
+  return sleep(1000).then(() => { // simulate server latency
+    if (['google','amazon','tesla'].includes(values.companyname)) {
+      throw { companyname: 'That companyname is taken' };
+    }
+  });
+};
+
+const asyncValidate = composeAsyncValidators({
+  username:usernameValidate,
+  companyname:companynameValidate
+});
+
+export default asyncValidate;
+```
